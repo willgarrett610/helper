@@ -23,7 +23,7 @@
  *  SOFTWARE.
  */
 
-package me.lucko.helper.sql;
+package me.lucko.helper.postgresql;
 
 import javax.annotation.Nonnull;
 
@@ -31,14 +31,6 @@ import javax.annotation.Nonnull;
  * Provides {@link Sql} instances.
  */
 public interface SqlProvider {
-
-    /**
-     * Gets the global datasource.
-     *
-     * @return the global datasource.
-     */
-    @Nonnull
-    Sql getSql();
 
     /**
      * Constructs a new datasource using the given credentials.
@@ -51,13 +43,5 @@ public interface SqlProvider {
      */
     @Nonnull
     Sql getSql(@Nonnull DatabaseCredentials credentials);
-
-    /**
-     * Gets the global database credentials being used for the global datasource.
-     *
-     * @return the global credentials
-     */
-    @Nonnull
-    DatabaseCredentials getGlobalCredentials();
 
 }

@@ -23,13 +23,13 @@
  *  SOFTWARE.
  */
 
-package me.lucko.helper.sql.util;
+package me.lucko.helper.postgresql.util;
 
 import com.google.common.collect.Maps;
 
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.promise.Promise;
-import me.lucko.helper.sql.Sql;
+import me.lucko.helper.postgresql.Sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

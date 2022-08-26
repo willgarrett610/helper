@@ -23,13 +23,13 @@
  *  SOFTWARE.
  */
 
-package me.lucko.helper.sql;
+package me.lucko.helper.postgresql;
 
 import com.zaxxer.hikari.HikariDataSource;
 
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.promise.Promise;
-import me.lucko.helper.sql.batch.BatchBuilder;
+import me.lucko.helper.postgresql.batch.BatchBuilder;
 import me.lucko.helper.terminable.Terminable;
 
 import org.intellij.lang.annotations.Language;

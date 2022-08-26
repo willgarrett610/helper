@@ -23,7 +23,7 @@
  *  SOFTWARE.
  */
 
-package me.lucko.helper.sql;
+package me.lucko.helper.postgresql;
 
 import org.bukkit.configuration.ConfigurationSection;
 

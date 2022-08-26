@@ -23,68 +23,63 @@
  *  SOFTWARE.
  */
 
-package me.lucko.helper.sql.batch;
+package me.lucko.helper.postgresql.plugin;
 
 import me.lucko.helper.promise.Promise;
+import me.lucko.helper.postgresql.Sql;
+import me.lucko.helper.postgresql.batch.BatchBuilder;
 
 import be.bendem.sqlstreams.util.SqlConsumer;
 
 import java.sql.PreparedStatement;
-import java.util.Collection;
+import java.util.LinkedList;
 
 import javax.annotation.Nonnull;
 
-/**
- * Represents a statement meant to be executed more than a single time.
- *
- * <p>It will be executed all at once, using a single database connection.</p>
- */
-public interface BatchBuilder {
+public class HelperSqlBatchBuilder implements BatchBuilder {
 
-    /**
-     * Gets the statement to be executed when this batch is finished.
-     *
-     * @return the statement to be executed
-     */
+    @Nonnull private final Sql owner;
+    @Nonnull private final String statement;
+    @Nonnull private final LinkedList<SqlConsumer<PreparedStatement>> handlers;
+
+    public HelperSqlBatchBuilder(@Nonnull Sql owner, @Nonnull String statement) {
+        this.owner = owner;
+        this.statement = statement;
+        this.handlers = new LinkedList<>();
+    }
+
     @Nonnull
-    String getStatement();
+    @Override
+    public String getStatement() {
+        return this.statement;
+    }
 
-    /**
-     * Gets a {@link Collection} of handlers for this statement.
-     *
-     * @return the handlers for this statement
-     */
     @Nonnull
-    Collection<SqlConsumer<PreparedStatement>> getHandlers();
+    @Override
+    public LinkedList<SqlConsumer<PreparedStatement>> getHandlers() {
+        return this.handlers;
+    }
 
-    /**
-     * Resets this BatchBuilder, making it possible to re-use
-     * for multiple situations.
-     *
-     * @return this builder
-     */
-    BatchBuilder reset();
+    @Override
+    public BatchBuilder reset() {
+        this.handlers.clear();
+        return this;
+    }
 
-    /**
-     * Adds an additional handler to be executed when this batch is finished.
-     *
-     * @param handler the statement handler
-     * @return this builder
-     */
-    BatchBuilder batch(@Nonnull SqlConsumer<PreparedStatement> handler);
+    @Override
+    public BatchBuilder batch(@Nonnull SqlConsumer<PreparedStatement> handler) {
+        this.handlers.add(handler);
+        return this;
+    }
 
-    /**
-     * Executes the statement for this batch, with the handlers used to prepare it.
-     */
-    void execute();
+    @Override
+    public void execute() {
+        this.owner.executeBatch(this);
+    }
 
-    /**
-     * Executes the statement for this batch, with the handlers used to prepare it.
-     *
-     * <p>Will return a {@link Promise} to do this.</p>
-     *
-     * @return a promise to execute this batch asynchronously
-     */
     @Nonnull
-    Promise<Void> executeAsync();
+    @Override
+    public Promise<Void> executeAsync() {
+        return this.owner.executeBatchAsync(this);
+    }
 }

@@ -23,14 +23,14 @@
  *  SOFTWARE.
  */
 
-package me.lucko.helper.sql.plugin;
+package me.lucko.helper.postgresql.plugin;
 
 import me.lucko.helper.internal.HelperImplementationPlugin;
 import me.lucko.helper.maven.MavenLibrary;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
-import me.lucko.helper.sql.DatabaseCredentials;
-import me.lucko.helper.sql.Sql;
-import me.lucko.helper.sql.SqlProvider;
+import me.lucko.helper.postgresql.DatabaseCredentials;
+import me.lucko.helper.postgresql.Sql;
+import me.lucko.helper.postgresql.SqlProvider;
 
 import javax.annotation.Nonnull;
 
@@ -38,24 +38,11 @@ import javax.annotation.Nonnull;
 @MavenLibrary(groupId = "org.slf4j", artifactId = "slf4j-api", version = "1.7.30")
 public class HelperSqlPlugin extends ExtendedJavaPlugin implements SqlProvider {
     private DatabaseCredentials globalCredentials;
-    private Sql globalDataSource;
 
     @Override
     protected void enable() {
-        this.globalCredentials = DatabaseCredentials.fromConfig(loadConfig("config.yml"));
-        this.globalDataSource = getSql(this.globalCredentials);
-        this.globalDataSource.bindWith(this);
-
         // expose all instances as services.
         provideService(SqlProvider.class, this);
-        provideService(DatabaseCredentials.class, this.globalCredentials);
-        provideService(Sql.class, this.globalDataSource);
-    }
-
-    @Nonnull
-    @Override
-    public Sql getSql() {
-        return this.globalDataSource;
     }
 
     @Nonnull
@@ -64,9 +51,4 @@ public class HelperSqlPlugin extends ExtendedJavaPlugin implements SqlProvider {
         return new HelperSql(credentials);
     }
 
-    @Nonnull
-    @Override
-    public DatabaseCredentials getGlobalCredentials() {
-        return this.globalCredentials;
-    }
 }

@@ -23,15 +23,15 @@
  *  SOFTWARE.
  */
 
-package me.lucko.helper.sql.plugin;
+package me.lucko.helper.postgresql.plugin;
 
 import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import me.lucko.helper.sql.DatabaseCredentials;
-import me.lucko.helper.sql.Sql;
-import me.lucko.helper.sql.batch.BatchBuilder;
+import me.lucko.helper.postgresql.DatabaseCredentials;
+import me.lucko.helper.postgresql.Sql;
+import me.lucko.helper.postgresql.batch.BatchBuilder;
 
 import org.intellij.lang.annotations.Language;
 

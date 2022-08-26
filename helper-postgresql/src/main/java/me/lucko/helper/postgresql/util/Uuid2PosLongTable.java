@@ -23,26 +23,25 @@
  *  SOFTWARE.
  */
 
-package me.lucko.helper.sql.util;
+package me.lucko.helper.postgresql.util;
 
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.promise.Promise;
-import me.lucko.helper.sql.Sql;
+import me.lucko.helper.postgresql.Sql;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.UUID;
 
 /**
- * A wrapper around a table storing a single positive {@link BigDecimal} per {@link UUID} key.
+ * A wrapper around a table storing a single positive {@link Long} per {@link UUID} key.
  */
-public class Uuid2PosDecimalTable extends Uuid2PosNumberTable<BigDecimal, Optional<BigDecimal>> {
-    public Uuid2PosDecimalTable(Sql sql, String table) {
+public class Uuid2PosLongTable extends Uuid2PosNumberTable<Long, OptionalLong> {
+    public Uuid2PosLongTable(Sql sql, String table) {
         super(sql, table);
     }
 
@@ -50,28 +49,28 @@ public class Uuid2PosDecimalTable extends Uuid2PosNumberTable<BigDecimal, Option
     protected String getCreateStmt() {
         return "CREATE TABLE IF NOT EXISTS `{table}` (" +
                 "`uuid` VARCHAR(36) NOT NULL, " +
-                "`value` DECIMAL(19) UNSIGNED NOT NULL, " +
+                "`value` BIGINT UNSIGNED NOT NULL, " +
                 "PRIMARY KEY (`uuid`))";
     }
 
     @Override
-    protected void set(PreparedStatement ps, int paramIndex, BigDecimal value) throws SQLException {
-        ps.setBigDecimal(paramIndex, value);
+    protected void set(PreparedStatement ps, int paramIndex, Long value) throws SQLException {
+        ps.setLong(paramIndex, value);
     }
 
     @Override
-    protected BigDecimal get(ResultSet rs, String columnLabel) throws SQLException {
-        return rs.getBigDecimal(columnLabel);
+    protected Long get(ResultSet rs, String columnLabel) throws SQLException {
+        return rs.getLong(columnLabel);
     }
 
     @Override
-    protected Optional<BigDecimal> getOptional(ResultSet rs, String columnLabel) throws SQLException {
-        return Optional.of(rs.getBigDecimal(columnLabel));
+    protected OptionalLong getOptional(ResultSet rs, String columnLabel) throws SQLException {
+        return OptionalLong.of(rs.getLong(columnLabel));
     }
 
     @Override
-    protected Optional<BigDecimal> emptyOptional() {
-        return Optional.empty();
+    protected OptionalLong emptyOptional() {
+        return OptionalLong.empty();
     }
 
     /**
@@ -81,12 +80,12 @@ public class Uuid2PosDecimalTable extends Uuid2PosNumberTable<BigDecimal, Option
      * @param amount the amount to add
      * @return a promise encapsulating the operation
      */
-    public Promise<Void> add(UUID uuid, BigDecimal amount) {
+    public Promise<Void> add(UUID uuid, long amount) {
         Objects.requireNonNull(uuid, "uuid");
-        if (amount.equals(BigDecimal.ZERO)) {
+        if (amount == 0) {
             return Promise.completed(null);
         }
-        if (amount.signum() == -1) {
+        if (amount < 0) {
             throw new IllegalArgumentException("amount < 0");
         }
 
@@ -100,9 +99,9 @@ public class Uuid2PosDecimalTable extends Uuid2PosNumberTable<BigDecimal, Option
      * @param amount the amount to set
      * @return a promise encapsulating the operation
      */
-    public Promise<Void> set(UUID uuid, BigDecimal amount) {
+    public Promise<Void> set(UUID uuid, long amount) {
         Objects.requireNonNull(uuid, "uuid");
-        if (amount.signum() == -1) {
+        if (amount < 0) {
             throw new IllegalArgumentException("amount < 0");
         }
 
@@ -116,12 +115,12 @@ public class Uuid2PosDecimalTable extends Uuid2PosNumberTable<BigDecimal, Option
      * @param amount the amount to take
      * @return true if successful
      */
-    public Promise<Boolean> take(UUID uuid, BigDecimal amount) {
+    public Promise<Boolean> take(UUID uuid, long amount) {
         Objects.requireNonNull(uuid, "uuid");
-        if (amount.equals(BigDecimal.ZERO)) {
-            return Promise.completed(null);
+        if (amount == 0) {
+            return Promise.completed(true);
         }
-        if (amount.signum() == -1) {
+        if (amount < 0) {
             throw new IllegalArgumentException("amount < 0");
         }
 
@@ -133,15 +132,15 @@ public class Uuid2PosDecimalTable extends Uuid2PosNumberTable<BigDecimal, Option
      *
      * @return the total
      */
-    public Promise<BigDecimal> total() {
+    public Promise<Long> total() {
         return Schedulers.async().call(() -> {
             try (Connection c = sql.getConnection()) {
                 try (PreparedStatement ps = c.prepareStatement(SELECT_TOTAL.replace("{table}", table))) {
                     try (ResultSet rs = ps.executeQuery()) {
                         if (rs.next()) {
-                            return rs.getBigDecimal("total");
+                            return rs.getLong("total");
                         } else {
-                            return BigDecimal.ZERO;
+                            return 0L;
                         }
                     }
                 }
